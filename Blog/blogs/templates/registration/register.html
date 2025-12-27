@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Register - My Blog</title>
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'admin/css/base.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'admin/css/forms.css' %}">
+    <style>
+        body { background: #f6f6f6; margin: 40px auto; max-width: 600px; }
+        .module { background: white; padding: 20px; border: 1px solid #ccc; border-radius: 8px; }
+        h2 { text-align: center; color: #417690; }
+    </style>
+</head>
+<body>
+    <div class="module">
+        <h2>Create an Account</h2>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <div style="text-align: center; margin-top: 20px;">
+                <button type="submit" class="btn btn-success">Register</button>
+            </div>
+        </form>
+        <p style="text-align: center; margin-top: 20px;">
+            Already have an account? <a href="{% url 'login' %}">Login here</a>
+        </p>
+    </div>
+</body>
+</html>
