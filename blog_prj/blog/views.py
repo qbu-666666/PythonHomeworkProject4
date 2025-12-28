@@ -23,6 +23,7 @@ class PostListView(ListView):
 class PostDetailView(DetailView):
     model = BlogPost
     template_name = 'blog/post_detail.html'
+    context_object_name = 'post'  # 添加这行，解决第一个问题
 
     def get_object(self):
         obj = super().get_object()
@@ -31,12 +32,12 @@ class PostDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['comments'] = self.object.comments.all().order_by('-created_date')
+        # 修改这里：使用 post_comments 而不是 comments
+        context['comments'] = self.object.post_comments.all().order_by('-created_date')
         context['comment_form'] = CommentForm()
         context['liked'] = self.object.likes.filter(id=self.request.user.id).exists() if self.request.user.is_authenticated else False
         context['total_likes'] = self.object.likes.count()
         return context
-    
 
 @login_required
 def add_comment(request, pk):
@@ -108,14 +109,20 @@ def register(request):
 @login_required
 def profile(request, username):
     user = get_object_or_404(User, username=username)
-    posts = user.blogpost_set.all()
+    posts = user.blogpost_set.all()  # 这应该使用 owner 而不是 blogpost_set
     total_posts = posts.count()
     total_likes = sum(post.likes.count() for post in posts)
-    total_comments = sum(post.comments.count() for post in posts)
+    # 修改这里：使用 post_comments 而不是 comments
+    total_comments = sum(post.post_comments.count() for post in posts)
+    
+    # 添加总浏览量统计
+    total_views = sum(post.views for post in posts)
+    
     return render(request, 'blog/profile.html', {
         'profile_user': user,
         'posts': posts,
         'total_posts': total_posts,
         'total_likes': total_likes,
         'total_comments': total_comments,
+        'total_views': total_views,  # 添加浏览量
     })

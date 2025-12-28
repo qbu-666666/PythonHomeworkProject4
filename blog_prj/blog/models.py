@@ -11,7 +11,7 @@ class BlogPost(models.Model):
     views = models.PositiveIntegerField(default=0)
     tags = models.CharField(max_length=200, blank=True)
     likes = models.ManyToManyField(User, related_name='blogpost_likes', blank=True)
-    
+
     class Meta:
         ordering = ['-date_added']
 
@@ -26,7 +26,7 @@ class BlogPost(models.Model):
         self.save(update_fields=['views'])
 
 class Comment(models.Model):
-    post = models.ForeignKey(BlogPost, on_delete=models.CASCADE, related_name='comments')
+    post = models.ForeignKey(BlogPost, on_delete=models.CASCADE, related_name='post_comments')
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     text = models.TextField()
     created_date = models.DateTimeField(auto_now_add=True)
