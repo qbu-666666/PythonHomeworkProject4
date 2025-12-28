@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ post.title }}{% endblock %}
+
+{% block content %}
+<div class="page-card">
+    <h2>{{ post.title }}</h2>
+
+    {% if post.cover_image %}
+        <div style="text-align: center; margin: 20px 0;">
+            <img src="{{ post.cover_image.url }}" alt="{{ post.title }}" style="max-width: 100%; height: auto; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.4);">
+        </div>
+    {% endif %}
+
+    <div style="margin: 20px 0; color: #bbb; font-size: 0.95em;">
+        作者：{{ post.owner.username }} | 
+        发布时间：{{ post.date_added|date:"Y-m-d H:i" }} | 
+        浏览量：{{ post.views }} | 
+        点赞：{{ total_likes }}
+    </div>
+
+    <div style="line-height: 1.8; font-size: 1.1em; color: #eee; margin: 30px 0;">
+        {{ post.text|linebreaks }}
+    </div>
+
+    <!-- 点赞按钮 -->
+    {% if user.is_authenticated %}
+    <div class="form-actions" style="margin: 30px 0;">
+        <button id="like-btn" class="btn-primary" data-pk="{{ post.pk }}" data-liked="{{ liked|yesno:'true,false' }}">
+            {% if liked %}取消点赞{% else %}点赞{% endif %} ({{ total_likes }})
+        </button>
+    </div>
+    {% endif %}
+
+    <!-- 操作按钮（仅作者） -->
+    {% if user == post.owner %}
+    <div style="margin: 20px 0; text-align: center;">
+        <a href="{% url 'blog:post_edit' post.pk %}" class="btn-primary" style="margin: 0 10px; padding: 10px 30px; font-size: 1em;">
+            编辑
+        </a>
+        <a href="{% url 'blog:post_delete' post.pk %}" style="color: #ff6b81; text-decoration: none; margin: 0 10px;">
+            删除
+        </a>
+    </div>
+    {% endif %}
+
+    <hr style="border: 1px solid rgba(255,255,255,0.1); margin: 40px 0;">
+
+    <!-- 评论区 -->
+    <h3>评论 ({{ comments.count }})</h3>
+
+    {% if user.is_authenticated %}
+    <form method="post" action="{% url 'blog:add_comment' post.pk %}" class="post-form">
+        {% csrf_token %}
+        <div class="form-group">
+            <textarea name="text" rows="4" placeholder="写下你的评论..." required style="width: 100%; padding: 14px; border-radius: 12px; border: none; background: rgba(255,255,255,0.2); color: #fff; font-size: 1.05em; box-sizing: border-box;"></textarea>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn-primary">发表评论</button>
+        </div>
+    </form>
+    {% else %}
+    <p style="color: #aaa; font-style: italic;">请 <a href="{% url 'login' %}">登录</a> 后发表评论</p>
+    {% endif %}
+
+    <div style="margin-top: 30px;">
+        {% for comment in comments %}
+        <div style="background: rgba(255,255,255,0.08); padding: 15px; border-radius: 12px; margin-bottom: 15px; border-left: 4px solid #4a90e2;">
+            <strong>{{ comment.author.username }}</strong> 
+            <span style="color: #aaa; font-size: 0.9em;">{{ comment.created_date|date:"Y-m-d H:i" }}</span>
+            <p style="margin: 10px 0 0; color: #eee;">{{ comment.text|linebreaks }}</p>
+        </div>
+        {% empty %}
+        <p style="color: #aaa; font-style: italic;">暂无评论，快来抢沙发~</p>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- AJAX 点赞脚本 -->
+{% if user.is_authenticated %}
+<script>
+document.getElementById('like-btn').addEventListener('click', function() {
+    const pk = this.dataset.pk;
+    fetch(`/post/${pk}/like/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        this.textContent = (data.liked ? '取消点赞' : '点赞') + ` (${data.total_likes})`;
+        this.dataset.liked = data.liked;
+    });
+});
+</script>
+{% endif %}
+{% endblock %}

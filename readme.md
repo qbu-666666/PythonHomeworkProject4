@@ -1,4 +1,10 @@
-# Django 博客系统
+# PythonHomeworkProject4
+
+This project is my Python homework at SZU, which requires performing data processing and analysis tasks.
+
+The LaTeX template is from https://github.com/ChaoFan996/Experiment-Report-Template-SZU.
+
+## Django 博客系统
 
 一个功能完整、界面现代化的 Django 博客系统，具有用户认证、文章管理、评论点赞等功能。
 
